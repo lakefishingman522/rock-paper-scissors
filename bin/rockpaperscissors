@@ -1,0 +1,50 @@
+#!/usr/bin/env php
+<?php
+
+
+set_include_path(implode(PATH_SEPARATOR, array(
+    realpath(__DIR__ . "/../lib"),
+    get_include_path(),
+)));
+
+spl_autoload_register(function($className){
+    $filename = str_replace("\\", "/", $className) . ".php";
+    require_once $filename;
+});
+
+
+use RockPaperScissors\Game;
+use RockPaperScissors\IO;
+use RockPaperScissors\ConsoleHumanPlayer;
+use RockPaperScissors\Automaton;
+
+$io = new IO();
+$game = new Game();
+
+$io->write("Let the games begin");
+$hvc = null;
+while(!in_array($hvc, array('y','n'))){
+    $io->write("Human vs Computer [Y/n]");
+    $hvc = strtolower($io->read());
+}
+
+$p2 = new Automaton("Svengali");
+if($hvc == 'y'){
+    $p1 = new ConsoleHumanPlayer($io, $io);
+} else {
+    $p1 = new Automaton("Yumihiki-doji");
+    $io->write("Let the computers {$p1->name()} and {$p2->name()} duke it out!");
+}
+
+
+$game->play($p1, $p2);
+
+while(true){
+    $game->printResult($io);
+    $io->write("Another game? [Y/n]");
+    if(strtolower(trim($io->read())) == "n"){
+        $io->write("Oh well, maybe another time then...");
+        break;
+    };
+    $game->replay();
+}
